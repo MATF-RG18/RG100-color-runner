@@ -1,0 +1,162 @@
+#include "funkcije.h"
+
+static void on_display(void);
+static void on_reshape(int width, int height);
+
+void light_init(void);
+void on_timer(int value);
+
+float animation_parameter;
+float laneCoord;
+int lane;
+int running;
+int ballSpeed;
+int scoreMulti, noObstacles;
+int score;
+
+void initGL(int argc, char **argv){
+	glutInit(&argc,argv);
+    glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
+
+	glutInitWindowSize(1200, 800);
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow(argv[0]);
+
+	glClearColor(0.0, 0.0, 0.0, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+}
+
+int main(int argc, char **argv){
+    
+	initGL(argc, argv);
+	
+    glutDisplayFunc(on_display);
+    glutReshapeFunc(on_reshape);
+    glutKeyboardFunc(on_keyboard);
+    
+    laneCoord = 0;
+    lane = 1; // pocinjemo u srednjem lane-u
+	animation_parameter = 0;
+    
+    srand(time(NULL));
+    listaBoja = malloc(sizeof(boje) * brStaza);
+    pocetneBoje();
+    
+    running = 1;
+    score = 0;
+    ballSpeed = 15;
+    scoreMulti = 1;
+    noObstacles = 0;
+    glutTimerFunc(ballSpeed, on_timer, 0);
+    
+    glutMainLoop();
+    return 0;
+}
+
+static void on_reshape(int width, int height){
+	
+	if(height == 0){
+		height = 1;
+	}
+	
+	glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    
+	glViewport(0, 0, width, height);
+
+    gluPerspective(60.0, (float)width/height, 1.0, 1500.0);
+    glMatrixMode(GL_MODELVIEW);
+}
+
+void light_init(void){
+	
+	GLfloat light_position[] = { 0, 5, 0, 0};
+
+	GLfloat light_ambient[] = { 0.2, 0.2, 0.2, 1 };
+	GLfloat light_diffuse[] = { 0.7, 0.7, 0.7, 1 };
+	GLfloat light_specular[] = { 0.1, 0.1, 0.1, 1 };
+	
+	// ukljucuje se osvjetljenje i podesavaju parametri svetla
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+}
+
+static void on_display(void){
+    
+    int i;
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    light_init();
+    
+    glLoadIdentity();
+    gluLookAt(0.0, 1.7, -2.5,
+    		  0.0, 0.0, 0.0,
+    		  0.0, 1.0, 0.0);
+    		  
+    lopta();
+    
+    if(animation_parameter == 0){
+    	shift();
+    }
+    
+    glTranslatef(0, 0, -animation_parameter);
+		for(i=0; i<brStaza; i++){
+		    segment(listaBoja[i].pBoja[0], listaBoja[i].pBoja[1], listaBoja[i].pBoja[2]);
+		    glTranslatef(0, 0, lStaza);
+		}   
+    glTranslatef(0, 0, animation_parameter);
+    
+    glutSwapBuffers();     
+}
+
+void on_timer(int value){
+    if(value == 0){  
+		if(running && animation_parameter <= lStaza){
+			animation_parameter += 0.05;
+			glutPostRedisplay();
+			glutTimerFunc(ballSpeed, on_timer, 0);
+		}		
+		if (animation_parameter >= lStaza){
+			animation_parameter = 0;
+			running = 1;
+		}
+
+		/* 
+		ako nije iste boje kao prepreka zavrsavamo igru, 
+			prekidamo animaciju i ispisijemo score
+		*/
+		
+		// Zaokruzujemo AP na 2 decimalna mesta
+		if(roundf(animation_parameter*100)/100 == 3.75) {
+			if(	loptaR != listaBoja[1].pBoja[lane][0] ||
+				loptaG != listaBoja[1].pBoja[lane][1] ||
+				loptaB != listaBoja[1].pBoja[lane][2]
+				){
+				
+					printf("Level: %d, Score: %d\n", noObstacles, score);
+					running = 0;
+				
+			} else {
+			/* racunamo score i ubrzavamo animacju */
+				score = score + scoreMulti;
+				noObstacles++;
+				printf("%d, %d\n", noObstacles, score);
+				if(noObstacles > 4 && noObstacles%5 == 0 && ballSpeed != 1){
+					ballSpeed -= 1;
+					scoreMulti += 1;
+					printf("Speedup\n");
+				}
+			}	
+		}
+		
+	} else {
+		return;
+	}
+}
+
+

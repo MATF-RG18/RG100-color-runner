@@ -27,7 +27,27 @@ void lopta(){
     		glEnable(GL_LIGHTING);
 		glRotatef(-animation_parameter*90, 1, 0, 0);
 	glTranslatef(-laneCoord, -(0.1 + rLopte), 0);
+}
 
+void boost(){
+	float boostR = 1.0, boostG = 0.0, boostB = 0.0;
+	GLfloat ambient_boost[]  = {boostR * 0.6, boostG * 0.6, boostB * 0.6, 1};
+	GLfloat diffuse_boost[]  = {boostR * 0.8, boostG * 0.8, boostB * 0.8, 1};
+	GLfloat specular_boost[] = {boostR * 0.9, boostG * 0.9, boostB * 0.9, 1};
+	GLfloat shininess_boost  = 20;
+	
+	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_boost);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_boost);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specular_boost);
+    glMaterialf(GL_FRONT, GL_SHININESS, shininess_boost);
+    
+    glRotatef(45.0, 1, 0, 0);
+	glRotatef(45.0, 0, 0, 1);
+		glutSolidCube(0.2);
+	glRotatef(-45.0, 0, 0, 1);
+	glRotatef(-45.0, 1, 0, 0);
+
+	
 }
 
 /* objekat jedne prepreke */
@@ -101,6 +121,8 @@ static void staza(){
 void segment(GLfloat* p1Boja, GLfloat* p2Boja, GLfloat* p3Boja){
 
 	staza();
+	
+	
     
     // desna prepreka i boje
     

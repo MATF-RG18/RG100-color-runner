@@ -39,6 +39,7 @@ float animation_parameter;
 
 extern void on_keyboard(unsigned char key, int x, int y);
 extern void lopta();
+extern void boost();
 extern void segment(GLfloat* p1Boja, GLfloat* p2Boja, GLfloat* p3Boja);
 extern void pocetneBoje();
 extern void shift();

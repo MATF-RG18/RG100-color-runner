@@ -50,6 +50,8 @@ int main(int argc, char **argv){
     noObstacles = 0;
     glutTimerFunc(ballSpeed, on_timer, 0);
     
+    // napraviti boostLane[7] u For petlji sa Rand
+    
     glutMainLoop();
     return 0;
 }
@@ -89,6 +91,7 @@ void light_init(void){
 static void on_display(void){
     
     int i;
+    int rBoostLane  = rand() % 3;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     light_init();
@@ -102,15 +105,39 @@ static void on_display(void){
     
     if(animation_parameter == 0){
     	shift();
+    	// shift za RNG boost lane
     }
     
     glTranslatef(0, 0, -animation_parameter);
 		for(i=0; i<brStaza; i++){
 		    segment(listaBoja[i].pBoja[0], listaBoja[i].pBoja[1], listaBoja[i].pBoja[2]);
 		    glTranslatef(0, 0, lStaza);
+		    
+		    //------
+			if(rBoostLane == 0){
+				glTranslatef(-wStaza/laneOffset, 0, 0);
+			} else if(rBoostLane == 1){
+				glTranslatef(+wStaza/laneOffset, 0, 0);
+			}
+		
+			glTranslatef(0, 0.4, -lStaza/2);
+			glRotatef(-animation_parameter*90, 0, 1, 0);
+				boost();
+			glRotatef(animation_parameter*90, 0, 1, 0);
+			glTranslatef(0, -0.4, lStaza/2);
+		
+			if(rBoostLane == 0){
+				glTranslatef(+wStaza/laneOffset, 0, 0);
+			} else if(rBoostLane == 1){
+				glTranslatef(-wStaza/laneOffset, 0, 0);
+			}
+			//-------
+			//spawnuje boost() na lokaciji boostLane[i];
 		}   
     glTranslatef(0, 0, animation_parameter);
     
+    // Boost
+	
     glutSwapBuffers();     
 }
 

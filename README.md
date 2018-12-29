@@ -17,4 +17,4 @@ KONTROLE:
 
 Pri kraju, potrebno dodavanje komentara i namestanje boja.
 
-![screen](http://prntscr.com/m11q22?raw=true "latest screenshot")
+![screen](http://prntscr.com/m11q22 "latest screenshot")

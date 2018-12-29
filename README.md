@@ -16,5 +16,3 @@ KONTROLE:
 	Lopta moze da prodje samo kroz prepreku iste boje.
 
 Pri kraju, potrebno dodavanje komentara i namestanje boja.
-
-![screen](http://prntscr.com/m11q22 "latest screenshot")

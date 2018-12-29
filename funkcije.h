@@ -10,13 +10,17 @@ static float wZida = 0.1;
 static float hZida = 0.5;
 static float lStaza = 4.0;
 static float wStaza = 2.0;
-static int brStaza = 6;
+static int brStaza = 8;
 static float laneOffset = 3.5;
+static int boost_spawn_chance = 4;
 
 static int brBoja = 8; // 8 max
 extern GLfloat bojeRgb[3][3];
 extern GLfloat bojeOstalo[8][3];
-extern int running;
+extern int *boost_position;
+extern int running, running2;
+extern int boost_colected;
+
 
 extern float laneCoord;
 extern int lane;
@@ -36,10 +40,13 @@ boje *listaBoja;
 static float pi = 3.141592653589793;
 
 float animation_parameter;
+float animation_parameter2;
 
 extern void on_keyboard(unsigned char key, int x, int y);
 extern void lopta();
 extern void boost();
+extern void pocetni_boost();
+extern void spawn_boost();
 extern void segment(GLfloat* p1Boja, GLfloat* p2Boja, GLfloat* p3Boja);
 extern void pocetneBoje();
 extern void shift();

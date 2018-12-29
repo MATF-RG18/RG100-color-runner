@@ -2,23 +2,27 @@
 
 static void on_display(void);
 static void on_reshape(int width, int height);
+static void jump(void);
+static void output(char *string);
 
 void light_init(void);
 void on_timer(int value);
 
-float animation_parameter;
+float animation_parameter, animation_parameter2;
 float laneCoord;
 int lane;
-int running;
+int running, running2;
 int ballSpeed;
 int scoreMulti, noObstacles;
 int score;
+int boost_colected;
+int window_h = 800, window_w = 1200;
 
 void initGL(int argc, char **argv){
 	glutInit(&argc,argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
 
-	glutInitWindowSize(1200, 800);
+	glutInitWindowSize(window_w, window_h);
     glutInitWindowPosition(100, 100);
     glutCreateWindow(argv[0]);
 
@@ -38,20 +42,21 @@ int main(int argc, char **argv){
     laneCoord = 0;
     lane = 1; // pocinjemo u srednjem lane-u
 	animation_parameter = 0;
+	animation_parameter2 = 0;
     
-    srand(time(NULL));
+    srand(time(NULL)); // seed za sve rand() pozive 
     listaBoja = malloc(sizeof(boje) * brStaza);
     pocetneBoje();
-    
+    pocetni_boost();
+    boost_colected = 0;
+        
     running = 1;
     score = 0;
     ballSpeed = 15;
     scoreMulti = 1;
     noObstacles = 0;
     glutTimerFunc(ballSpeed, on_timer, 0);
-    
-    // napraviti boostLane[7] u For petlji sa Rand
-    
+       
     glutMainLoop();
     return 0;
 }
@@ -89,59 +94,81 @@ void light_init(void){
 }
 
 static void on_display(void){
+	// iscrtavanje 
     
     int i;
     int rBoostLane  = rand() % 3;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	//svetlo
     light_init();
     
+    //kamera
     glLoadIdentity();
     gluLookAt(0.0, 1.7, -2.5,
     		  0.0, 0.0, 0.0,
     		  0.0, 1.0, 0.0);
-    		  
+    //lopta		  
     lopta();
     
+    //skidamo prvi i dodajemo poslednji segment
     if(animation_parameter == 0){
     	shift();
-    	// shift za RNG boost lane
     }
     
-    glTranslatef(0, 0, -animation_parameter);
+    // iscrtavamo segmente i boostove
+    glTranslatef(0, -sin(animation_parameter2), -animation_parameter);
 		for(i=0; i<brStaza; i++){
 		    segment(listaBoja[i].pBoja[0], listaBoja[i].pBoja[1], listaBoja[i].pBoja[2]);
 		    glTranslatef(0, 0, lStaza);
-		    
-		    //------
-			if(rBoostLane == 0){
-				glTranslatef(-wStaza/laneOffset, 0, 0);
-			} else if(rBoostLane == 1){
-				glTranslatef(+wStaza/laneOffset, 0, 0);
-			}
-		
-			glTranslatef(0, 0.4, -lStaza/2);
-			glRotatef(-animation_parameter*90, 0, 1, 0);
-				boost();
-			glRotatef(animation_parameter*90, 0, 1, 0);
-			glTranslatef(0, -0.4, lStaza/2);
-		
-			if(rBoostLane == 0){
-				glTranslatef(+wStaza/laneOffset, 0, 0);
-			} else if(rBoostLane == 1){
-				glTranslatef(-wStaza/laneOffset, 0, 0);
-			}
-			//-------
-			//spawnuje boost() na lokaciji boostLane[i];
+		    spawn_boost(boost_position[i]);
 		}   
-    glTranslatef(0, 0, animation_parameter);
+    glTranslatef(0, sin(animation_parameter2), animation_parameter);
     
-    // Boost
+    // pretvaranje score-a u string i ispisivanje
+    char str_score[256];
+    char str_score2[] = "Score: ";
+    sprintf(str_score, "%d", score);
+    strcat(str_score2, str_score);
+    
+    glDisable(GL_LIGHTING);
+    output(str_score2);
+    glEnable(GL_LIGHTING);
 	
     glutSwapBuffers();     
 }
 
+void output(char *string) {
+
+	//funkcija iscrtava string score u gornjem levom uglu ekrana
+
+	glColor3f( 1.0, 1.0, 1.0 );
+	glMatrixMode( GL_PROJECTION );
+	
+	glPushMatrix();
+		glLoadIdentity();
+		gluOrtho2D( 0, window_w, 0, window_h );
+		glMatrixMode( GL_MODELVIEW );
+		
+		glPushMatrix();
+			glLoadIdentity();
+			glRasterPos2i( 10, window_h-10-24 ); // wh - offset - fontsize
+			int len = (int)strlen(string);
+			for ( int i = 0; i<len; ++i ) {
+				glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+			}
+		glPopMatrix();
+
+		glMatrixMode( GL_PROJECTION );
+	glPopMatrix();
+	
+	glMatrixMode( GL_MODELVIEW );
+
+}
+
 void on_timer(int value){
+
+	// timer koji kontrolise kretanje svih elemenata scene
     if(value == 0){  
 		if(running && animation_parameter <= lStaza){
 			animation_parameter += 0.05;
@@ -160,16 +187,25 @@ void on_timer(int value){
 		
 		// Zaokruzujemo AP na 2 decimalna mesta
 		if(roundf(animation_parameter*100)/100 == 3.75) {
-			if(	loptaR != listaBoja[1].pBoja[lane][0] ||
-				loptaG != listaBoja[1].pBoja[lane][1] ||
-				loptaB != listaBoja[1].pBoja[lane][2]
+			if(!running2){
+				if(	loptaR != listaBoja[1].pBoja[lane][0] 
+					|| loptaG != listaBoja[1].pBoja[lane][1] 
+					|| loptaB != listaBoja[1].pBoja[lane][2]
 				){
-				
-					printf("Level: %d, Score: %d\n", noObstacles, score);
 					running = 0;
-				
+				} else {
+					/* racunamo score i ubrzavamo animacju */
+					score = score + scoreMulti;
+					noObstacles++;
+					printf("%d, %d\n", noObstacles, score);
+					if(noObstacles > 4 && noObstacles%5 == 0 && ballSpeed != 1){
+						ballSpeed -= 1;
+						scoreMulti += 1;
+						printf("Speedup\n");
+					}
+				}	
 			} else {
-			/* racunamo score i ubrzavamo animacju */
+				/* racunamo score i ubrzavamo animacju */
 				score = score + scoreMulti;
 				noObstacles++;
 				printf("%d, %d\n", noObstacles, score);
@@ -178,12 +214,49 @@ void on_timer(int value){
 					scoreMulti += 1;
 					printf("Speedup\n");
 				}
-			}	
+			}
+		}
+		
+		// resetujemo mogucnost sakupljanja boost-a
+		if(animation_parameter == 0){
+			boost_colected = 0;
+		}
+		// detektujemo sakupljanje boosta preko pozicije
+		if(boost_position[0] != -1){
+			if(animation_parameter >= 1.85 	
+			&& animation_parameter <= 2.15
+			&& lane == boost_position[0]
+			&& !boost_colected
+			){
+				boost_position[0] = -1; // sklanjanje sa ekrana
+				boost_colected = 1; // sprecava dalje detekcije u range-u
+				jump(); // f-ja za skok
+			}
+		}
+	} else if(value == 1){ // tajmer za skok, sin(0-pi)
+	
+		if(running2 && animation_parameter2 <= pi){
+			animation_parameter2 += 0.05;
+			glutPostRedisplay();
+			glutTimerFunc(ballSpeed, on_timer, 1);
+		}
+			
+		if (animation_parameter2 >= pi){
+			animation_parameter2 = 0;
+			running2 = 0;
 		}
 		
 	} else {
 		return;
 	}
 }
+
+void jump(){
+	// funkcija za skok, poziva novi tajmer
+	running2 = 1;
+	glutTimerFunc(ballSpeed, on_timer, 1);
+}
+
+
 
 

@@ -2,7 +2,7 @@ PROGRAM 	= staza
 CC 			= gcc
 CFLAGS 		= -g -Wall
 LDLIBS 		= -lGL -lGLU -lglut -lm -std=c99
-FUNKCIJE  	= keyboard.c objekti.c boje.c izborBoja.c
+FUNKCIJE  	= keyboard.c objekti.c boje.c izborBoja.c boost.c
 
 $(PROGRAM): $(PROGRAM).c $(FUNKCIJE)
 	$(CC) -o $(PROGRAM) $(PROGRAM).c $(FUNKCIJE) $(LDLIBS)

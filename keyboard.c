@@ -29,7 +29,7 @@ void on_keyboard(unsigned char key, int x, int y){
 		    }
 		    break;
 		    
-		/* menjamo boju lopte: na 'j' postaje crvena, na 'k' zelena a na 'l' crvena */
+		//menjamo boju lopte: 'j' - crvena,'k' - zelena, 'l' - plava 
 		    
 		case 'j':			
 		case 'J':
@@ -46,8 +46,7 @@ void on_keyboard(unsigned char key, int x, int y){
 			loptaR = 0.0, loptaG = 0.0, loptaB = 1.0;
 			break;
 		
-		/* namestamo da na KRAJU igre na 'r' restartujemo igru, a na 'p' pauziramo */
-		
+		// na reset stavljamo sve vrednosti na inicijalne
 		case 'r':
 		case 'R':
 			running = 1;
@@ -58,9 +57,14 @@ void on_keyboard(unsigned char key, int x, int y){
 			scoreMulti = 1;
     		noObstacles = 0;
 			animation_parameter = 0;
+			animation_parameter2 = 0;
 			glutTimerFunc(ballSpeed, on_timer, 0);
+			pocetneBoje();
+    		pocetni_boost();
+    		boost_colected = 0;
 			break;
 	
+		//pauziramo igru, svaku animaciju zasebno
 		case 'p':
 		case 'P':
 			if(running){
@@ -68,6 +72,12 @@ void on_keyboard(unsigned char key, int x, int y){
 			} else {
 				running = 1;
 				glutTimerFunc(ballSpeed, on_timer, 0);
+			}
+			if(running2){
+				running2 = 0;
+			} else {
+				running2 = 1;
+				glutTimerFunc(ballSpeed, on_timer, 1);
 			}
 			break;
 	}

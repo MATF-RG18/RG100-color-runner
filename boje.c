@@ -119,4 +119,33 @@ void shift(){
 
 	}
 	
+	//deo pomeranja za boost-ove
+	//pomeramo prvih brStaza-1 za 1 unapred
+	for(int i=0; i<brStaza-1; i++) {
+		boost_position[i] = boost_position[i+1];
+	}
+	//pa postavljamo na poslednje mesto novu vrednost
+	int rand_boost_spawn = rand() % 10;
+	if(rand_boost_spawn < boost_spawn_chance) {
+		int rand_lane = rand() % 3;
+		boost_position[brStaza-1] = rand_lane;
+	} else {
+		boost_position[brStaza-1] = -1;
+	}
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

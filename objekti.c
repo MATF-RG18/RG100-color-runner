@@ -30,28 +30,28 @@ void lopta(){
 }
 
 void boost(){
+	// objekat boost treba da bude crven, intenzitet postavljamo preko materijala
 	float boostR = 1.0, boostG = 0.0, boostB = 0.0;
 	GLfloat ambient_boost[]  = {boostR * 0.6, boostG * 0.6, boostB * 0.6, 1};
 	GLfloat diffuse_boost[]  = {boostR * 0.8, boostG * 0.8, boostB * 0.8, 1};
 	GLfloat specular_boost[] = {boostR * 0.9, boostG * 0.9, boostB * 0.9, 1};
 	GLfloat shininess_boost  = 20;
 	
+	// primenjujemo materijal
 	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_boost);
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_boost);
     glMaterialfv(GL_FRONT, GL_SPECULAR, specular_boost);
     glMaterialf(GL_FRONT, GL_SHININESS, shininess_boost);
     
+    //rotiramo 2 puta za 45 stepeni za zelenji oblik
     glRotatef(45.0, 1, 0, 0);
 	glRotatef(45.0, 0, 0, 1);
 		glutSolidCube(0.2);
 	glRotatef(-45.0, 0, 0, 1);
 	glRotatef(-45.0, 1, 0, 0);
-
-	
 }
 
 /* objekat jedne prepreke */
-
 static void prepreka(){
 
 	glTranslatef(0, (wZida+hZida)/2, 0);
@@ -63,7 +63,6 @@ static void prepreka(){
 }
 
 /* postavljamo geometriju segmenta staze (bez prepreka) */
-
 static void staza(){
     
     float stazaR = 0.545;
@@ -117,12 +116,9 @@ static void staza(){
 }
 
 /* formiramo jedan segment iz predefinisanih random boja iz boje.c */
-
 void segment(GLfloat* p1Boja, GLfloat* p2Boja, GLfloat* p3Boja){
 
 	staza();
-	
-	
     
     // desna prepreka i boje
     

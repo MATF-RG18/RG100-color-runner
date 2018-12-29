@@ -17,4 +17,4 @@ KONTROLE:
 
 Pri kraju, potrebno dodavanje komentara i namestanje boja.
 
-![screen](https://github.com/MATF-RG18/RG100-color-runner/blob/master/Screenshots/26_11_18.PNG?raw=true "latest screenshot")
+![screen](http://prntscr.com/m11q22?raw=true "latest screenshot")
